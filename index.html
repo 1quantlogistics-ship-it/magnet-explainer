@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAGNET — The Naval Engineering Operating System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --black: #000000; --white: #ffffff; --gray-50: #fafafa; --gray-100: #f5f5f7;
+            --gray-200: #e8e8ed; --gray-300: #d2d2d7; --gray-400: #86868b; --gray-500: #6e6e73;
+            --gray-600: #515154; --gray-800: #1d1d1f; --gray-900: #0a0a0a;
+            --blue: #0071e3; --blue-dark: #2997ff; --green: #34c759; --orange: #ff9500; --red: #ff3b30;
+        }
+        html { scroll-behavior: smooth; }
+        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: var(--black); color: var(--gray-800); line-height: 1.5; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+        ::selection { background: var(--blue); color: var(--white); }
+
+        /* NAV */
+        nav { position: fixed; top: 0; left: 0; right: 0; height: 52px; background: rgba(0,0,0,0.8); backdrop-filter: saturate(180%) blur(20px); -webkit-backdrop-filter: saturate(180%) blur(20px); z-index: 9999; display: flex; align-items: center; justify-content: center; border-bottom: 1px solid rgba(255,255,255,0.08); }
+        nav .nav-content { width: 100%; max-width: 1200px; padding: 0 24px; display: flex; justify-content: space-between; align-items: center; }
+        nav .logo { font-size: 18px; font-weight: 700; letter-spacing: 0.02em; color: var(--white); }
+        nav .nav-links { display: flex; gap: 32px; }
+        nav .nav-links a { font-size: 13px; font-weight: 500; color: var(--gray-300); text-decoration: none; transition: color 0.2s; }
+        nav .nav-links a:hover { color: var(--white); }
+        @media (max-width: 768px) { nav .nav-links { display: none; } }
+
+        /* HERO */
+        .hero { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding-top: 52px; background: var(--black); color: var(--white); position: relative; overflow: hidden; }
+        .hero-grid { position: absolute; inset: 0; background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px); background-size: 60px 60px; animation: gridMove 20s linear infinite; }
+        @keyframes gridMove { 0% { transform: translate(0,0); } 100% { transform: translate(60px,60px); } }
+        .hero-glow { position: absolute; top: 30%; left: 50%; transform: translate(-50%,-50%); width: 1000px; height: 600px; background: radial-gradient(ellipse, rgba(0,113,227,0.15) 0%, transparent 70%); pointer-events: none; }
+        .hero-content { position: relative; z-index: 10; }
+        .hero-eyebrow { font-size: 17px; font-weight: 500; color: var(--gray-400); margin-bottom: 16px; letter-spacing: 0.02em; opacity: 0; transform: translateY(20px); animation: fadeUp 0.8s ease 0.2s forwards; }
+        .hero-title { font-size: clamp(72px, 15vw, 140px); font-weight: 700; letter-spacing: -0.04em; line-height: 0.95; margin-bottom: 24px; background: linear-gradient(180deg, #ffffff 0%, #a0a0a0 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; opacity: 0; transform: translateY(20px); animation: fadeUp 0.8s ease 0.4s forwards; }
+        .hero-subtitle { font-size: clamp(19px, 3vw, 24px); font-weight: 400; color: var(--gray-400); max-width: 650px; margin: 0 auto 40px; line-height: 1.5; opacity: 0; transform: translateY(20px); animation: fadeUp 0.8s ease 0.6s forwards; }
+        .hero-stats { display: flex; justify-content: center; gap: 48px; margin-bottom: 48px; opacity: 0; transform: translateY(20px); animation: fadeUp 0.8s ease 0.8s forwards; }
+        .hero-stat { text-align: center; }
+        .hero-stat-value { font-size: 32px; font-weight: 700; color: var(--white); letter-spacing: -0.02em; }
+        .hero-stat-label { font-size: 13px; color: var(--gray-500); margin-top: 4px; }
+        .hero-cta { display: inline-flex; align-items: center; gap: 8px; font-size: 19px; font-weight: 500; color: var(--blue-dark); text-decoration: none; opacity: 0; transform: translateY(20px); animation: fadeUp 0.8s ease 1s forwards; transition: gap 0.3s; }
+        .hero-cta:hover { gap: 12px; }
+        .hero-vessel { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 140%; max-width: 1800px; opacity: 0; animation: fadeIn 2s ease 1.2s forwards; }
+        .hero-vessel svg { width: 100%; height: auto; }
+        @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { to { opacity: 0.5; } }
+
+        /* SECTIONS */
+        section { padding: 0 24px; }
+        .statement { padding: 160px 24px; text-align: center; }
+        .statement-dark { background: var(--black); color: var(--white); }
+        .statement-light { background: var(--white); color: var(--gray-800); }
+        .statement-gray { background: var(--gray-100); color: var(--gray-800); }
+        .statement h2 { font-size: clamp(36px, 7vw, 64px); font-weight: 700; letter-spacing: -0.03em; line-height: 1.1; max-width: 1000px; margin: 0 auto 28px; }
+        .statement p { font-size: clamp(17px, 2.5vw, 21px); font-weight: 400; color: var(--gray-500); max-width: 700px; margin: 0 auto; line-height: 1.6; }
+        .statement-dark p { color: var(--gray-400); }
+
+        /* PROBLEM */
+        .problem { padding: 160px 24px; background: var(--white); }
+        .problem-content { max-width: 1200px; margin: 0 auto; text-align: center; }
+        .problem h2 { font-size: clamp(36px, 7vw, 64px); font-weight: 700; letter-spacing: -0.03em; margin-bottom: 24px; }
+        .problem-content > p { font-size: 19px; color: var(--gray-500); max-width: 600px; margin: 0 auto 80px; }
+        .chaos-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; max-width: 800px; margin: 0 auto 48px; }
+        @media (max-width: 700px) { .chaos-grid { grid-template-columns: repeat(2, 1fr); } }
+        .chaos-tool { background: var(--gray-100); border-radius: 16px; padding: 24px 16px; text-align: center; position: relative; }
+        .chaos-tool::after { content: '✕'; position: absolute; top: -8px; right: -8px; width: 24px; height: 24px; background: var(--red); color: var(--white); border-radius: 50%; font-size: 12px; display: flex; align-items: center; justify-content: center; font-weight: 600; }
+        .chaos-tool-name { font-size: 15px; font-weight: 600; color: var(--gray-800); margin-bottom: 4px; }
+        .chaos-tool-role { font-size: 13px; color: var(--gray-500); }
+        .problem-pain { display: flex; flex-wrap: wrap; justify-content: center; gap: 24px; margin-top: 48px; }
+        .pain-item { display: flex; align-items: center; gap: 8px; font-size: 15px; color: var(--gray-600); }
+        .pain-item .x { color: var(--red); font-weight: 600; }
+
+        /* COMPARISON */
+        .comparison { padding: 160px 24px; background: var(--gray-100); }
+        .comparison-content { max-width: 1100px; margin: 0 auto; }
+        .comparison-header { text-align: center; margin-bottom: 80px; }
+        .comparison-header h2 { font-size: clamp(32px, 6vw, 56px); font-weight: 700; letter-spacing: -0.02em; }
+        .comparison-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
+        @media (max-width: 800px) { .comparison-grid { grid-template-columns: 1fr; } }
+        .comparison-card { background: var(--white); border-radius: 24px; padding: 40px; }
+        .comparison-card.old { border: 2px solid var(--gray-200); }
+        .comparison-card.new { border: 2px solid var(--blue); box-shadow: 0 0 60px rgba(0,113,227,0.15); }
+        .comparison-card-badge { display: inline-block; padding: 6px 14px; border-radius: 100px; font-size: 13px; font-weight: 600; margin-bottom: 24px; }
+        .comparison-card.old .comparison-card-badge { background: var(--gray-200); color: var(--gray-600); }
+        .comparison-card.new .comparison-card-badge { background: var(--blue); color: var(--white); }
+        .comparison-card h3 { font-size: 28px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 24px; }
+        .comparison-list { list-style: none; }
+        .comparison-list li { display: flex; align-items: flex-start; gap: 12px; font-size: 16px; color: var(--gray-600); margin-bottom: 16px; line-height: 1.5; }
+        .comparison-list .icon { flex-shrink: 0; font-size: 14px; margin-top: 3px; }
+        .comparison-card.old .icon { color: var(--red); }
+        .comparison-card.new .icon { color: var(--green); }
+        .comparison-time { margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--gray-200); text-align: center; }
+        .comparison-time-value { font-size: 48px; font-weight: 700; letter-spacing: -0.03em; }
+        .comparison-card.old .comparison-time-value { color: var(--gray-400); }
+        .comparison-card.new .comparison-time-value { color: var(--blue); }
+        .comparison-time-label { font-size: 15px; color: var(--gray-500); margin-top: 4px; }
+
+        /* TERMINAL DEMO */
+        .demo-section { padding: 160px 24px; background: var(--black); }
+        .demo-content { max-width: 1200px; margin: 0 auto; }
+        .demo-header { text-align: center; margin-bottom: 80px; }
+        .demo-header h2 { font-size: clamp(32px, 6vw, 56px); font-weight: 700; letter-spacing: -0.02em; color: var(--white); margin-bottom: 16px; }
+        .demo-header p { font-size: 19px; color: var(--gray-400); }
+        .terminal-window { background: var(--gray-900); border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); overflow: hidden; box-shadow: 0 40px 80px rgba(0,0,0,0.5); }
+        .terminal-header { background: rgba(255,255,255,0.05); padding: 14px 20px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+        .terminal-dot { width: 12px; height: 12px; border-radius: 50%; }
+        .terminal-dot.red { background: #ff5f57; }
+        .terminal-dot.yellow { background: #febc2e; }
+        .terminal-dot.green { background: #28c840; }
+        .terminal-title { flex: 1; text-align: center; font-size: 13px; font-weight: 500; color: var(--gray-500); }
+        .terminal-body { padding: 24px; font-family: 'JetBrains Mono', monospace; font-size: 14px; line-height: 1.7; color: var(--gray-300); min-height: 400px; }
+        .terminal-line { margin-bottom: 8px; opacity: 0; transform: translateY(10px); }
+        .terminal-line.visible { opacity: 1; transform: translateY(0); transition: all 0.4s ease; }
+        .terminal-prompt { color: var(--green); }
+        .terminal-command { color: var(--white); }
+        .terminal-output { color: var(--gray-400); padding-left: 20px; }
+        .terminal-success { color: var(--green); }
+        .terminal-info { color: var(--blue-dark); }
+        .terminal-value { color: var(--orange); }
+        .terminal-cursor { display: inline-block; width: 8px; height: 18px; background: var(--white); animation: blink 1s step-end infinite; vertical-align: text-bottom; }
+        @keyframes blink { 50% { opacity: 0; } }
+
+        /* PHYSICS */
+        .physics { padding: 160px 24px; background: var(--white); }
+        .physics-content { max-width: 1200px; margin: 0 auto; }
+        .physics-header { text-align: center; margin-bottom: 80px; }
+        .physics-header h2 { font-size: clamp(32px, 6vw, 56px); font-weight: 700; letter-spacing: -0.02em; margin-bottom: 16px; }
+        .physics-header p { font-size: 19px; color: var(--gray-500); }
+        .physics-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+        @media (max-width: 1000px) { .physics-grid { grid-template-columns: repeat(3, 1fr); } }
+        @media (max-width: 700px) { .physics-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 500px) { .physics-grid { grid-template-columns: 1fr; } }
+        .physics-card { background: var(--gray-50); border-radius: 20px; padding: 28px 24px; transition: transform 0.3s, box-shadow 0.3s; }
+        .physics-card:hover { transform: translateY(-4px); box-shadow: 0 16px 48px rgba(0,0,0,0.08); }
+        .physics-card-icon { width: 48px; height: 48px; background: var(--black); border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 16px; font-size: 20px; color: var(--white); }
+        .physics-card h3 { font-size: 17px; font-weight: 600; margin-bottom: 8px; }
+        .physics-card p { font-size: 14px; color: var(--gray-500); line-height: 1.5; }
+
+        /* IMPACT */
+        .impact { padding: 200px 24px; background: var(--black); text-align: center; position: relative; overflow: hidden; }
+        .impact-glow { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 800px; height: 400px; background: radial-gradient(ellipse, rgba(0,113,227,0.2) 0%, transparent 60%); pointer-events: none; }
+        .impact-content { position: relative; z-index: 10; }
+        .impact-number { font-size: clamp(100px, 25vw, 240px); font-weight: 700; letter-spacing: -0.05em; line-height: 0.9; background: linear-gradient(180deg, #ffffff 0%, #666666 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 16px; }
+        .impact-label { font-size: clamp(24px, 5vw, 40px); font-weight: 500; color: var(--gray-400); margin-bottom: 100px; }
+        .impact-comparisons { display: flex; justify-content: center; gap: 80px; flex-wrap: wrap; }
+        .impact-item { text-align: center; }
+        .impact-item-task { font-size: 17px; color: var(--gray-500); margin-bottom: 12px; }
+        .impact-item-time { font-size: 28px; font-weight: 600; color: var(--blue-dark); }
+
+        /* SPIRAL */
+        .spiral { padding: 160px 24px; background: var(--white); text-align: center; }
+        .spiral-content { max-width: 1000px; margin: 0 auto; }
+        .spiral h2 { font-size: clamp(32px, 6vw, 56px); font-weight: 700; letter-spacing: -0.02em; margin-bottom: 80px; }
+        .spiral-flow { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 12px; margin-bottom: 60px; }
+        .spiral-step { padding: 14px 24px; background: var(--gray-100); border-radius: 100px; font-size: 15px; font-weight: 500; color: var(--gray-800); transition: all 0.3s; }
+        .spiral-step:hover { background: var(--black); color: var(--white); }
+        .spiral-step.active { background: var(--blue); color: var(--white); }
+        .spiral-arrow { color: var(--gray-400); font-size: 16px; }
+        .spiral-description { font-size: 19px; color: var(--gray-500); max-width: 600px; margin: 0 auto; }
+
+        /* AGENTS */
+        .agents { padding: 160px 24px; background: var(--gray-100); }
+        .agents-content { max-width: 1200px; margin: 0 auto; }
+        .agents-header { text-align: center; margin-bottom: 80px; }
+        .agents-header h2 { font-size: clamp(32px, 6vw, 56px); font-weight: 700; letter-spacing: -0.02em; margin-bottom: 16px; }
+        .agents-header p { font-size: 19px; color: var(--gray-500); }
+        .agents-diagram { display: flex; flex-direction: column; align-items: center; margin-bottom: 80px; }
+        .agents-hub { background: var(--black); color: var(--white); padding: 32px 48px; border-radius: 20px; text-align: center; margin-bottom: 40px; box-shadow: 0 20px 60px rgba(0,0,0,0.15); }
+        .agents-hub h3 { font-size: 20px; font-weight: 600; margin-bottom: 8px; }
+        .agents-hub p { font-size: 14px; color: var(--gray-400); }
+        .agents-connector { width: 2px; height: 40px; background: linear-gradient(180deg, var(--black), var(--gray-300)); margin-bottom: 40px; }
+        .agents-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        @media (max-width: 900px) { .agents-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 600px) { .agents-grid { grid-template-columns: 1fr; } }
+        .agent-card { background: var(--white); border-radius: 20px; padding: 28px 24px; transition: transform 0.3s, box-shadow 0.3s; border: 1px solid var(--gray-200); }
+        .agent-card:hover { transform: translateY(-4px); box-shadow: 0 16px 48px rgba(0,0,0,0.08); }
+        .agent-card h4 { font-size: 18px; font-weight: 600; margin-bottom: 8px; }
+        .agent-card p { font-size: 15px; color: var(--gray-500); line-height: 1.5; }
+
+        /* STATE DEMO */
+        .state-demo { padding: 160px 24px; background: var(--black); }
+        .state-demo-content { max-width: 1200px; margin: 0 auto; }
+        .state-demo-header { text-align: center; margin-bottom: 80px; }
+        .state-demo-header h2 { font-size: clamp(32px, 6vw, 56px); font-weight: 700; letter-spacing: -0.02em; color: var(--white); margin-bottom: 16px; }
+        .state-demo-header p { font-size: 19px; color: var(--gray-400); }
+        .ui-window { background: rgba(30,30,32,0.9); backdrop-filter: blur(40px); -webkit-backdrop-filter: blur(40px); border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); overflow: hidden; box-shadow: 0 40px 80px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1); }
+        .ui-window-header { background: rgba(255,255,255,0.03); padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.06); }
+        .ui-window-dots { display: flex; gap: 8px; }
+        .ui-window-dot { width: 12px; height: 12px; border-radius: 50%; }
+        .ui-window-dot.red { background: #ff5f57; }
+        .ui-window-dot.yellow { background: #febc2e; }
+        .ui-window-dot.green { background: #28c840; }
+        .ui-window-title { font-size: 13px; font-weight: 500; color: var(--gray-400); }
+        .ui-window-body { display: grid; grid-template-columns: 280px 1fr; min-height: 500px; }
+        @media (max-width: 900px) { .ui-window-body { grid-template-columns: 1fr; } }
+        .ui-sidebar { background: rgba(0,0,0,0.3); padding: 20px; border-right: 1px solid rgba(255,255,255,0.06); }
+        .ui-sidebar-section { margin-bottom: 32px; }
+        .ui-sidebar-title { font-size: 11px; font-weight: 600; color: var(--gray-500); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px; }
+        .ui-sidebar-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 8px; font-size: 14px; color: var(--gray-300); cursor: pointer; transition: all 0.2s; margin-bottom: 4px; }
+        .ui-sidebar-item:hover { background: rgba(255,255,255,0.05); }
+        .ui-sidebar-item.active { background: rgba(0,113,227,0.3); color: var(--white); }
+        .ui-sidebar-icon { width: 20px; text-align: center; font-size: 12px; }
+        .ui-main { padding: 24px; }
+        .ui-main-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+        .ui-main-title { font-size: 24px; font-weight: 600; color: var(--white); }
+        .ui-badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; background: rgba(52,199,89,0.2); border-radius: 100px; font-size: 12px; font-weight: 500; color: var(--green); }
+        .ui-badge-dot { width: 6px; height: 6px; background: var(--green); border-radius: 50%; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .ui-params { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+        @media (max-width: 600px) { .ui-params { grid-template-columns: 1fr; } }
+        .ui-param { background: rgba(255,255,255,0.03); border-radius: 12px; padding: 16px; border: 1px solid rgba(255,255,255,0.06); }
+        .ui-param-label { font-size: 12px; color: var(--gray-500); margin-bottom: 6px; }
+        .ui-param-value { font-size: 20px; font-weight: 600; color: var(--white); font-family: 'JetBrains Mono', monospace; }
+        .ui-param-unit { font-size: 14px; color: var(--gray-500); font-weight: 400; }
+
+        /* 3D VIEWER */
+        .viewer-demo { padding: 160px 24px; background: linear-gradient(180deg, var(--black) 0%, #0a0a12 100%); }
+        .viewer-demo-content { max-width: 1200px; margin: 0 auto; }
+        .viewer-demo-header { text-align: center; margin-bottom: 80px; }
+        .viewer-demo-header h2 { font-size: clamp(32px, 6vw, 56px); font-weight: 700; letter-spacing: -0.02em; color: var(--white); margin-bottom: 16px; }
+        .viewer-demo-header p { font-size: 19px; color: var(--gray-400); }
+        .viewer-window { background: #0d0d0f; border-radius: 20px; border: 1px solid rgba(255,255,255,0.08); overflow: hidden; box-shadow: 0 40px 100px rgba(0,0,0,0.6); }
+        .viewer-toolbar { background: rgba(255,255,255,0.03); padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.06); }
+        .viewer-toolbar-left { display: flex; align-items: center; gap: 16px; }
+        .viewer-dots { display: flex; gap: 8px; }
+        .viewer-dot { width: 12px; height: 12px; border-radius: 50%; }
+        .viewer-dot.red { background: #ff5f57; }
+        .viewer-dot.yellow { background: #febc2e; }
+        .viewer-dot.green { background: #28c840; }
+        .viewer-title { font-size: 13px; font-weight: 500; color: var(--gray-400); }
+        .viewer-tools { display: flex; gap: 8px; }
+        .viewer-tool { padding: 8px 14px; background: rgba(255,255,255,0.05); border-radius: 6px; font-size: 12px; font-weight: 500; color: var(--gray-400); cursor: pointer; transition: all 0.2s; border: none; }
+        .viewer-tool:hover { background: rgba(255,255,255,0.1); color: var(--white); }
+        .viewer-tool.active { background: var(--blue); color: var(--white); }
+        .viewer-canvas { height: 500px; position: relative; display: flex; align-items: center; justify-content: center; background: radial-gradient(ellipse at center, rgba(0,113,227,0.05) 0%, transparent 50%), linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px); background-size: 100% 100%, 40px 40px, 40px 40px; }
+        .viewer-hull { width: 80%; max-width: 700px; }
+        .viewer-hull svg { width: 100%; height: auto; }
+        .viewer-info { position: absolute; bottom: 20px; left: 20px; display: flex; gap: 24px; }
+        .viewer-info-item { background: rgba(0,0,0,0.6); backdrop-filter: blur(10px); padding: 10px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); }
+        .viewer-info-label { font-size: 10px; color: var(--gray-500); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px; }
+        .viewer-info-value { font-size: 14px; font-weight: 600; color: var(--white); font-family: 'JetBrains Mono', monospace; }
+        .viewer-controls { position: absolute; right: 20px; bottom: 20px; display: flex; flex-direction: column; gap: 8px; }
+        .viewer-control { width: 40px; height: 40px; background: rgba(0,0,0,0.6); backdrop-filter: blur(10px); border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; color: var(--gray-400); font-size: 18px; cursor: pointer; transition: all 0.2s; }
+        .viewer-control:hover { background: rgba(255,255,255,0.1); color: var(--white); }
+
+        /* STATS */
+        .stats { padding: 160px 24px; background: var(--gray-100); }
+        .stats-content { max-width: 1200px; margin: 0 auto; }
+        .stats-header { text-align: center; margin-bottom: 80px; }
+        .stats-header h2 { font-size: clamp(32px, 6vw, 56px); font-weight: 700; letter-spacing: -0.02em; }
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
+        @media (max-width: 900px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 500px) { .stats-grid { grid-template-columns: 1fr; } }
+        .stat-card { background: var(--white); border-radius: 20px; padding: 32px 24px; text-align: center; }
+        .stat-value { font-size: 48px; font-weight: 700; letter-spacing: -0.03em; color: var(--black); margin-bottom: 8px; }
+        .stat-label { font-size: 15px; color: var(--gray-500); }
+
+        /* OUTPUT */
+        .output { padding: 160px 24px; background: var(--white); }
+        .output-content { max-width: 1200px; margin: 0 auto; }
+        .output-header { text-align: center; margin-bottom: 80px; }
+        .output-header h2 { font-size: clamp(32px, 6vw, 56px); font-weight: 700; letter-spacing: -0.02em; margin-bottom: 16px; }
+        .output-header p { font-size: 19px; color: var(--gray-500); }
+        .output-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+        @media (max-width: 800px) { .output-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 500px) { .output-grid { grid-template-columns: 1fr; } }
+        .output-item { display: flex; align-items: center; gap: 12px; padding: 20px 24px; background: var(--gray-50); border-radius: 14px; }
+        .output-item .check { color: var(--green); font-size: 18px; font-weight: 600; }
+        .output-item span { font-size: 16px; font-weight: 500; color: var(--gray-800); }
+
+        /* INTEGRATION */
+        .integration { padding: 160px 24px; background: var(--gray-100); text-align: center; }
+        .integration-content { max-width: 900px; margin: 0 auto; }
+        .integration h2 { font-size: clamp(32px, 6vw, 56px); font-weight: 700; letter-spacing: -0.02em; margin-bottom: 24px; }
+        .integration-content > p { font-size: 19px; color: var(--gray-500); max-width: 600px; margin: 0 auto 60px; }
+        .integration-flow { display: flex; justify-content: center; align-items: center; gap: 24px; flex-wrap: wrap; }
+        .integration-badge { padding: 18px 36px; background: var(--black); color: var(--white); border-radius: 100px; font-size: 18px; font-weight: 600; }
+        .integration-arrow { font-size: 24px; color: var(--gray-400); }
+        .integration-tools { display: flex; gap: 12px; flex-wrap: wrap; }
+        .integration-tool { padding: 14px 24px; background: var(--white); border-radius: 100px; font-size: 15px; font-weight: 500; color: var(--gray-600); }
+
+        /* SECURITY */
+        .security { padding: 160px 24px; background: var(--white); }
+        .security-content { max-width: 900px; margin: 0 auto; }
+        .security h2 { font-size: clamp(32px, 6vw, 56px); font-weight: 700; letter-spacing: -0.02em; text-align: center; margin-bottom: 60px; }
+        .security-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+        @media (max-width: 600px) { .security-grid { grid-template-columns: 1fr; } }
+        .security-item { display: flex; align-items: center; gap: 14px; padding: 20px 24px; background: var(--gray-50); border-radius: 14px; font-size: 16px; color: var(--gray-700); }
+        .security-item .check { color: var(--green); font-weight: 600; font-size: 18px; }
+
+        /* ROADMAP */
+        .roadmap { padding: 160px 24px; background: var(--black); }
+        .roadmap-content { max-width: 1000px; margin: 0 auto; }
+        .roadmap-header { text-align: center; margin-bottom: 80px; }
+        .roadmap-header h2 { font-size: clamp(32px, 6vw, 56px); font-weight: 700; letter-spacing: -0.02em; color: var(--white); margin-bottom: 16px; }
+        .roadmap-header p { font-size: 19px; color: var(--gray-400); }
+        .roadmap-timeline { display: flex; flex-direction: column; gap: 24px; }
+        .roadmap-item { display: grid; grid-template-columns: 100px 1fr; gap: 32px; align-items: start; }
+        @media (max-width: 600px) { .roadmap-item { grid-template-columns: 1fr; gap: 12px; } }
+        .roadmap-version { font-size: 24px; font-weight: 700; color: var(--blue-dark); }
+        .roadmap-version.current { color: var(--green); }
+        .roadmap-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 24px; }
+        .roadmap-card.current { background: rgba(52,199,89,0.1); border-color: rgba(52,199,89,0.3); }
+        .roadmap-title { font-size: 18px; font-weight: 600; color: var(--white); margin-bottom: 8px; }
+        .roadmap-desc { font-size: 15px; color: var(--gray-400); line-height: 1.6; }
+        .roadmap-badge { display: inline-block; padding: 4px 10px; background: var(--green); color: var(--black); border-radius: 100px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em; margin-left: 12px; }
+
+        /* FOUNDER */
+        .founder { padding: 200px 24px; background: var(--gray-900); text-align: center; }
+        .founder-content { max-width: 800px; margin: 0 auto; }
+        .founder-quote { font-size: clamp(24px, 4vw, 36px); font-weight: 400; color: var(--gray-300); line-height: 1.5; font-style: italic; margin-bottom: 40px; }
+        .founder-quote em { color: var(--white); font-style: normal; }
+        .founder-attribution { font-size: 17px; color: var(--gray-500); }
+
+        /* CTA */
+        .cta { padding: 200px 24px; background: var(--black); text-align: center; position: relative; overflow: hidden; }
+        .cta-glow { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 1200px; height: 600px; background: radial-gradient(ellipse, rgba(0,113,227,0.15) 0%, transparent 60%); pointer-events: none; }
+        .cta-content { position: relative; z-index: 10; }
+        .cta h2 { font-size: clamp(64px, 12vw, 120px); font-weight: 700; letter-spacing: -0.04em; background: linear-gradient(180deg, #ffffff 0%, #666666 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 24px; }
+        .cta-tagline { font-size: clamp(21px, 4vw, 32px); font-weight: 500; color: var(--gray-400); margin-bottom: 40px; }
+        .cta-stats { font-size: 15px; color: var(--gray-500); margin-bottom: 16px; }
+        .cta-closing { font-size: 19px; color: var(--gray-400); max-width: 500px; margin: 0 auto 80px; }
+        .cta-footer { font-size: 14px; color: var(--gray-600); }
+
+        /* REVEAL */
+        .reveal { opacity: 0; transform: translateY(40px); transition: opacity 0.8s cubic-bezier(0.5,0,0,1), transform 0.8s cubic-bezier(0.5,0,0,1); }
+        .reveal.visible { opacity: 1; transform: translateY(0); }
+        .reveal-stagger > * { opacity: 0; transform: translateY(30px); transition: opacity 0.6s cubic-bezier(0.5,0,0,1), transform 0.6s cubic-bezier(0.5,0,0,1); }
+        .reveal-stagger.visible > *:nth-child(1) { transition-delay: 0.05s; }
+        .reveal-stagger.visible > *:nth-child(2) { transition-delay: 0.1s; }
+        .reveal-stagger.visible > *:nth-child(3) { transition-delay: 0.15s; }
+        .reveal-stagger.visible > *:nth-child(4) { transition-delay: 0.2s; }
+        .reveal-stagger.visible > *:nth-child(5) { transition-delay: 0.25s; }
+        .reveal-stagger.visible > *:nth-child(6) { transition-delay: 0.3s; }
+        .reveal-stagger.visible > *:nth-child(7) { transition-delay: 0.35s; }
+        .reveal-stagger.visible > *:nth-child(8) { transition-delay: 0.4s; }
+        .reveal-stagger.visible > *:nth-child(9) { transition-delay: 0.45s; }
+        .reveal-stagger.visible > *:nth-child(10) { transition-delay: 0.5s; }
+        .reveal-stagger.visible > *:nth-child(11) { transition-delay: 0.55s; }
+        .reveal-stagger.visible > *:nth-child(12) { transition-delay: 0.6s; }
+        .reveal-stagger.visible > * { opacity: 1; transform: translateY(0); }
+    </style>
+</head>
+<body>
+    <nav><div class="nav-content"><div class="logo">MAGNET</div><div class="nav-links"><a href="#physics">Physics</a><a href="#architecture">Architecture</a><a href="#demo">Demo</a><a href="#security">Security</a></div></div></nav>
+
+    <section class="hero">
+        <div class="hero-grid"></div>
+        <div class="hero-glow"></div>
+        <div class="hero-content">
+            <p class="hero-eyebrow">The Naval Engineering Operating System</p>
+            <h1 class="hero-title">MAGNET</h1>
+            <p class="hero-subtitle">From mission brief to validated design. Minutes, not months. Physics-bound. Agent-coordinated. Deterministic.</p>
+            <div class="hero-stats">
+                <div class="hero-stat"><div class="hero-stat-value">58</div><div class="hero-stat-label">Modules</div></div>
+                <div class="hero-stat"><div class="hero-stat-value">2,090</div><div class="hero-stat-label">Tests</div></div>
+                <div class="hero-stat"><div class="hero-stat-value">12</div><div class="hero-stat-label">Physics Engines</div></div>
+                <div class="hero-stat"><div class="hero-stat-value">150k+</div><div class="hero-stat-label">Lines of Code</div></div>
+            </div>
+            <a href="#problem" class="hero-cta">See how it works <span class="arrow">→</span></a>
+        </div>
+        <div class="hero-vessel">
+            <svg viewBox="0 0 1400 350" fill="none"><path d="M100 220 Q250 150, 500 135 Q750 120, 1000 135 Q1200 155, 1300 200" stroke="rgba(255,255,255,0.35)" stroke-width="2" fill="none"><animate attributeName="stroke-dasharray" from="0,2000" to="2000,0" dur="2s" fill="freeze"/></path><path d="M100 220 Q250 270, 500 285 Q750 300, 1000 290 Q1200 270, 1300 200" stroke="rgba(255,255,255,0.35)" stroke-width="2" fill="none"><animate attributeName="stroke-dasharray" from="0,2000" to="2000,0" dur="2s" fill="freeze"/></path><path d="M150 230 Q500 210, 700 205 Q900 210, 1250 228" stroke="rgba(255,255,255,0.12)" stroke-width="1" fill="none"/><path d="M400 135 L400 90 Q600 70, 800 90 L800 135" stroke="rgba(255,255,255,0.2)" stroke-width="1.5" fill="none"/><circle cx="680" cy="220" r="4" fill="rgba(0,113,227,0.6)"/><text x="680" y="245" font-size="10" fill="rgba(255,255,255,0.3)" text-anchor="middle" font-family="Inter">LCB</text></svg>
+        </div>
+    </section>
+
+    <section class="problem" id="problem">
+        <div class="problem-content reveal">
+            <h2>Marine design is broken.</h2>
+            <p>8+ disconnected tools. Weeks of iteration. Copy-paste between programs and pray nothing breaks.</p>
+            <div class="chaos-grid">
+                <div class="chaos-tool"><div class="chaos-tool-name">Rhino</div><div class="chaos-tool-role">Hull geometry</div></div>
+                <div class="chaos-tool"><div class="chaos-tool-name">Maxsurf</div><div class="chaos-tool-role">Hydrostatics</div></div>
+                <div class="chaos-tool"><div class="chaos-tool-name">Excel</div><div class="chaos-tool-role">Scantlings</div></div>
+                <div class="chaos-tool"><div class="chaos-tool-name">NAPA</div><div class="chaos-tool-role">Stability</div></div>
+                <div class="chaos-tool"><div class="chaos-tool-name">AutoCAD</div><div class="chaos-tool-role">Layouts</div></div>
+                <div class="chaos-tool"><div class="chaos-tool-name">Word</div><div class="chaos-tool-role">Reports</div></div>
+                <div class="chaos-tool"><div class="chaos-tool-name">Orca3D</div><div class="chaos-tool-role">Resistance</div></div>
+                <div class="chaos-tool"><div class="chaos-tool-name">Custom</div><div class="chaos-tool-role">Weight</div></div>
+            </div>
+            <div class="problem-pain">
+                <div class="pain-item"><span class="x">✕</span> Enter LOA in 5 different places</div>
+                <div class="pain-item"><span class="x">✕</span> No single source of truth</div>
+                <div class="pain-item"><span class="x">✕</span> Changes break everything</div>
+                <div class="pain-item"><span class="x">✕</span> Zero conversational intelligence</div>
+            </div>
+        </div>
+    </section>
+
+    <section class="statement statement-dark"><div class="reveal"><h2>One environment.<br>One command.<br>One validated design.</h2><p>MAGNET is not CAD with AI sprinkled on top. It's a design operating system.</p></div></section>
+
+    <section class="comparison">
+        <div class="comparison-content">
+            <div class="comparison-header reveal"><h2>Before & After</h2></div>
+            <div class="comparison-grid reveal">
+                <div class="comparison-card old">
+                    <span class="comparison-card-badge">Traditional</span>
+                    <h3>Fragmented Workflow</h3>
+                    <ul class="comparison-list">
+                        <li><span class="icon">✕</span> 8+ disconnected software packages</li>
+                        <li><span class="icon">✕</span> Manual data transfer between tools</li>
+                        <li><span class="icon">✕</span> Duplicate data entry everywhere</li>
+                        <li><span class="icon">✕</span> Re-run 6 programs per change</li>
+                        <li><span class="icon">✕</span> "Which file is current?"</li>
+                    </ul>
+                    <div class="comparison-time"><div class="comparison-time-value">Weeks</div><div class="comparison-time-label">per concept design</div></div>
+                </div>
+                <div class="comparison-card new">
+                    <span class="comparison-card-badge">MAGNET</span>
+                    <h3>Unified Intelligence</h3>
+                    <ul class="comparison-list">
+                        <li><span class="icon">✓</span> Single integrated design state</li>
+                        <li><span class="icon">✓</span> Automatic propagation on change</li>
+                        <li><span class="icon">✓</span> 500+ parameters, one source of truth</li>
+                        <li><span class="icon">✓</span> Conversational reasoning engine</li>
+                        <li><span class="icon">✓</span> Real-time validation at every step</li>
+                    </ul>
+                    <div class="comparison-time"><div class="comparison-time-value">Minutes</div><div class="comparison-time-label">per concept design</div></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="demo-section" id="demo">
+        <div class="demo-content">
+            <div class="demo-header reveal"><h2>See It In Action</h2><p>Watch MAGNET transform a mission brief into a validated design.</p></div>
+            <div class="terminal-window reveal">
+                <div class="terminal-header"><div class="terminal-dot red"></div><div class="terminal-dot yellow"></div><div class="terminal-dot green"></div><span class="terminal-title">MAGNET CLI — Design Session</span></div>
+                <div class="terminal-body" id="terminal">
+                    <div class="terminal-line" data-delay="0"><span class="terminal-prompt">magnet ❯</span><span class="terminal-command"> design new "32ft Patrol Catamaran"</span></div>
+                    <div class="terminal-line" data-delay="400"><span class="terminal-output">Initializing design state...</span></div>
+                    <div class="terminal-line" data-delay="800"><span class="terminal-success">✓</span><span class="terminal-output"> Design "32ft Patrol Catamaran" created</span></div>
+                    <div class="terminal-line" data-delay="1200"><span class="terminal-prompt">magnet ❯</span><span class="terminal-command"> set mission.max_speed 35kts range 300nm crew 4</span></div>
+                    <div class="terminal-line" data-delay="1600"><span class="terminal-info">→</span><span class="terminal-output"> Mission parameters locked. Starting hull generation...</span></div>
+                    <div class="terminal-line" data-delay="2000"><span class="terminal-output">  Hull form: </span><span class="terminal-value">Deep-V Catamaran</span></div>
+                    <div class="terminal-line" data-delay="2200"><span class="terminal-output">  LOA: </span><span class="terminal-value">9.75m</span><span class="terminal-output"> | Beam: </span><span class="terminal-value">3.20m</span><span class="terminal-output"> | Draft: </span><span class="terminal-value">0.85m</span></div>
+                    <div class="terminal-line" data-delay="2400"><span class="terminal-output">  Cb: </span><span class="terminal-value">0.412</span><span class="terminal-output"> | Cp: </span><span class="terminal-value">0.628</span><span class="terminal-output"> | Cwp: </span><span class="terminal-value">0.734</span></div>
+                    <div class="terminal-line" data-delay="2800"><span class="terminal-success">✓</span><span class="terminal-output"> Hull geometry generated (NURBS)</span></div>
+                    <div class="terminal-line" data-delay="3200"><span class="terminal-info">→</span><span class="terminal-output"> Running hydrostatics integration...</span></div>
+                    <div class="terminal-line" data-delay="3600"><span class="terminal-output">  Displacement: </span><span class="terminal-value">4,850 kg</span><span class="terminal-output"> | LCB: </span><span class="terminal-value">4.12m</span></div>
+                    <div class="terminal-line" data-delay="3800"><span class="terminal-output">  BMt: </span><span class="terminal-value">2.84m</span><span class="terminal-output"> | KMt: </span><span class="terminal-value">3.21m</span><span class="terminal-output"> | GM: </span><span class="terminal-value">1.42m</span></div>
+                    <div class="terminal-line" data-delay="4200"><span class="terminal-success">✓</span><span class="terminal-output"> Stability check: </span><span class="terminal-success">PASS</span><span class="terminal-output"> (AVS: 78°)</span></div>
+                    <div class="terminal-line" data-delay="4600"><span class="terminal-info">→</span><span class="terminal-output"> Running resistance prediction (Savitsky)...</span></div>
+                    <div class="terminal-line" data-delay="5000"><span class="terminal-output">  Rt @ 35kts: </span><span class="terminal-value">18.4 kN</span><span class="terminal-output"> | Required power: </span><span class="terminal-value">2 × 350 HP</span></div>
+                    <div class="terminal-line" data-delay="5400"><span class="terminal-success">✓</span><span class="terminal-output"> Scantlings sized (ABS HSNC compliant)</span></div>
+                    <div class="terminal-line" data-delay="5800"><span class="terminal-success">✓</span><span class="terminal-output"> Classification check: </span><span class="terminal-success">4 societies passed</span></div>
+                    <div class="terminal-line" data-delay="6400"><span class="terminal-success">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span></div>
+                    <div class="terminal-line" data-delay="6600"><span class="terminal-success">✓ DESIGN COMPLETE</span><span class="terminal-output"> — 12 physics engines • 9 phases • 2.4 seconds</span></div>
+                    <div class="terminal-line" data-delay="6800"><span class="terminal-success">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span></div>
+                    <div class="terminal-line" data-delay="7200"><span class="terminal-prompt">magnet ❯</span><span class="terminal-cursor"></span></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="physics" id="physics">
+        <div class="physics-content">
+            <div class="physics-header reveal"><h2>12 Physics Engines. Unified.</h2><p>Not AI guesswork. Deterministic mathematics.</p></div>
+            <div class="physics-grid reveal-stagger">
+                <div class="physics-card"><div class="physics-card-icon">∮</div><h3>NURBS / B-splines</h3><p>Mathematically precise hull surface representation</p></div>
+                <div class="physics-card"><div class="physics-card-icon">∫</div><h3>Hydrostatics</h3><p>Simpson's Rule for displacement, centers, waterplane</p></div>
+                <div class="physics-card"><div class="physics-card-icon">⟳</div><h3>Righting Arm</h3><p>GZ curve generation across heel angles</p></div>
+                <div class="physics-card"><div class="physics-card-icon">◇</div><h3>GM / AVS</h3><p>Metacentric height, angle of vanishing stability</p></div>
+                <div class="physics-card"><div class="physics-card-icon">▭</div><h3>Plate & Stiffener</h3><p>Section modulus, moment of inertia, buckling</p></div>
+                <div class="physics-card"><div class="physics-card-icon">≋</div><h3>Holtrop-Mennen</h3><p>Displacement hull resistance prediction</p></div>
+                <div class="physics-card"><div class="physics-card-icon">⋀</div><h3>Savitsky Planing</h3><p>High-speed planing hull resistance</p></div>
+                <div class="physics-card"><div class="physics-card-icon">⚡</div><h3>Power / Range</h3><p>Fuel consumption, operating envelope</p></div>
+                <div class="physics-card"><div class="physics-card-icon">⊕</div><h3>Weight / CG</h3><p>Parametric mass with center tracking</p></div>
+                <div class="physics-card"><div class="physics-card-icon">⬡</div><h3>Spatial Packing</h3><p>Interior layout optimization</p></div>
+                <div class="physics-card"><div class="physics-card-icon">⊞</div><h3>R-tree Index</h3><p>Fast geometric queries for routing</p></div>
+                <div class="physics-card"><div class="physics-card-icon">⤳</div><h3>A* / Graph</h3><p>Systems routing through 3D space</p></div>
+            </div>
+        </div>
+    </section>
+
+    <section class="impact">
+        <div class="impact-glow"></div>
+        <div class="impact-content reveal">
+            <div class="impact-number">90–99%</div>
+            <div class="impact-label">time reduction</div>
+            <div class="impact-comparisons">
+                <div class="impact-item"><div class="impact-item-task">Concept vessel</div><div class="impact-item-time">weeks → 10 min</div></div>
+                <div class="impact-item"><div class="impact-item-task">20 variations</div><div class="impact-item-time">3 months → 1 hour</div></div>
+                <div class="impact-item"><div class="impact-item-task">RFP packages</div><div class="impact-item-time">days → minutes</div></div>
+            </div>
+        </div>
+    </section>
+
+    <section class="spiral">
+        <div class="spiral-content reveal">
+            <h2>The Design Spiral. Automated.</h2>
+            <div class="spiral-flow">
+                <span class="spiral-step">Mission</span><span class="spiral-arrow">→</span>
+                <span class="spiral-step">Hull Form</span><span class="spiral-arrow">→</span>
+                <span class="spiral-step">Hydrostatics</span><span class="spiral-arrow">→</span>
+                <span class="spiral-step">Structure</span><span class="spiral-arrow">→</span>
+                <span class="spiral-step">Arrangement</span><span class="spiral-arrow">→</span>
+                <span class="spiral-step">Propulsion</span><span class="spiral-arrow">→</span>
+                <span class="spiral-step">Weight</span><span class="spiral-arrow">→</span>
+                <span class="spiral-step">Stability</span><span class="spiral-arrow">→</span>
+                <span class="spiral-step">Compliance</span><span class="spiral-arrow">↻</span>
+            </div>
+            <p class="spiral-description">Each phase has entry conditions, validators, exit gates, and rollback support. Changes automatically trigger the correct re-validations.</p>
+        </div>
+    </section>
+
+    <section class="agents" id="architecture">
+        <div class="agents-content">
+            <div class="agents-header reveal"><h2>Multi-Agent Architecture</h2><p>A coordinated team of engineering minds.</p></div>
+            <div class="agents-diagram reveal">
+                <div class="agents-hub"><h3>Unified Design State</h3><p>500+ parameters • Event bus • Full traceability</p></div>
+                <div class="agents-connector"></div>
+            </div>
+            <div class="agents-grid reveal-stagger">
+                <div class="agent-card"><h4>Director Agent</h4><p>Interprets user intent, coordinates workflow, manages phase transitions</p></div>
+                <div class="agent-card"><h4>Naval Architect</h4><p>Hull form generation, coefficients, hydrostatics, resistance prediction</p></div>
+                <div class="agent-card"><h4>Structural Engineer</h4><p>Scantlings, pressures, frames, stringers, plating, class rules</p></div>
+                <div class="agent-card"><h4>Systems Agent</h4><p>Propulsion sizing, electrical loads, HVAC, fuel systems</p></div>
+                <div class="agent-card"><h4>Interior Agent</h4><p>Spatial layout, compartment packing, corridor and egress generation</p></div>
+                <div class="agent-card"><h4>Supervisor Agent</h4><p>Arbitration, tradeoff resolution, safety constraints, design intent</p></div>
+            </div>
+        </div>
+    </section>
+
+    <section class="state-demo">
+        <div class="state-demo-content">
+            <div class="state-demo-header reveal"><h2>Live Design State</h2><p>500+ parameters. One source of truth. Real-time propagation.</p></div>
+            <div class="ui-window reveal">
+                <div class="ui-window-header">
+                    <div class="ui-window-dots"><div class="ui-window-dot red"></div><div class="ui-window-dot yellow"></div><div class="ui-window-dot green"></div></div>
+                    <span class="ui-window-title">MAGNET Design State — Patrol Cat 32ft</span>
+                    <div class="ui-window-actions"></div>
+                </div>
+                <div class="ui-window-body">
+                    <div class="ui-sidebar">
+                        <div class="ui-sidebar-section">
+                            <div class="ui-sidebar-title">Design Phases</div>
+                            <div class="ui-sidebar-item"><span class="ui-sidebar-icon">✓</span><span>Mission</span></div>
+                            <div class="ui-sidebar-item"><span class="ui-sidebar-icon">✓</span><span>Hull Form</span></div>
+                            <div class="ui-sidebar-item active"><span class="ui-sidebar-icon">●</span><span>Hydrostatics</span></div>
+                            <div class="ui-sidebar-item"><span class="ui-sidebar-icon">○</span><span>Structure</span></div>
+                            <div class="ui-sidebar-item"><span class="ui-sidebar-icon">○</span><span>Arrangement</span></div>
+                        </div>
+                        <div class="ui-sidebar-section">
+                            <div class="ui-sidebar-title">Validators</div>
+                            <div class="ui-sidebar-item"><span class="ui-sidebar-icon" style="color:#34c759;">✓</span><span>Stability</span></div>
+                            <div class="ui-sidebar-item"><span class="ui-sidebar-icon" style="color:#34c759;">✓</span><span>Lloyd's</span></div>
+                            <div class="ui-sidebar-item"><span class="ui-sidebar-icon" style="color:#34c759;">✓</span><span>ABS HSNC</span></div>
+                        </div>
+                    </div>
+                    <div class="ui-main">
+                        <div class="ui-main-header">
+                            <span class="ui-main-title">Hydrostatics</span>
+                            <div class="ui-badge"><span class="ui-badge-dot"></span>All validators passing</div>
+                        </div>
+                        <div class="ui-params">
+                            <div class="ui-param"><div class="ui-param-label">Displacement</div><div class="ui-param-value">4,850 <span class="ui-param-unit">kg</span></div></div>
+                            <div class="ui-param"><div class="ui-param-label">LCB (from FP)</div><div class="ui-param-value">4.12 <span class="ui-param-unit">m</span></div></div>
+                            <div class="ui-param"><div class="ui-param-label">VCB</div><div class="ui-param-value">0.37 <span class="ui-param-unit">m</span></div></div>
+                            <div class="ui-param"><div class="ui-param-label">Waterplane Area</div><div class="ui-param-value">22.8 <span class="ui-param-unit">m²</span></div></div>
+                            <div class="ui-param"><div class="ui-param-label">BMt</div><div class="ui-param-value">2.84 <span class="ui-param-unit">m</span></div></div>
+                            <div class="ui-param"><div class="ui-param-label">KMt</div><div class="ui-param-value">3.21 <span class="ui-param-unit">m</span></div></div>
+                            <div class="ui-param"><div class="ui-param-label">GM</div><div class="ui-param-value">1.42 <span class="ui-param-unit">m</span></div></div>
+                            <div class="ui-param"><div class="ui-param-label">AVS</div><div class="ui-param-value">78 <span class="ui-param-unit">°</span></div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="viewer-demo">
+        <div class="viewer-demo-content">
+            <div class="viewer-demo-header reveal"><h2>Real-Time 3D Visualization</h2><p>Engineering-accurate geometry. What you see is what the math calculates.</p></div>
+            <div class="viewer-window reveal">
+                <div class="viewer-toolbar">
+                    <div class="viewer-toolbar-left">
+                        <div class="viewer-dots"><div class="viewer-dot red"></div><div class="viewer-dot yellow"></div><div class="viewer-dot green"></div></div>
+                        <span class="viewer-title">Hull Geometry — patrol_cat_32ft.glb</span>
+                    </div>
+                    <div class="viewer-tools">
+                        <button class="viewer-tool active">Wireframe</button>
+                        <button class="viewer-tool">Shaded</button>
+                        <button class="viewer-tool">Sections</button>
+                        <button class="viewer-tool">Hydro</button>
+                    </div>
+                </div>
+                <div class="viewer-canvas">
+                    <div class="viewer-hull">
+                        <svg viewBox="0 0 800 400" fill="none">
+                            <line x1="400" y1="50" x2="400" y2="350" stroke="rgba(255,255,255,0.1)" stroke-width="1" stroke-dasharray="4 4"/>
+                            <line x1="100" y1="220" x2="700" y2="220" stroke="rgba(0,113,227,0.4)" stroke-width="2"/>
+                            <text x="720" y="224" font-size="11" fill="rgba(0,113,227,0.6)" font-family="Inter">DWL</text>
+                            <path d="M 150 200 Q 200 150, 300 130 Q 400 115, 500 130 Q 600 150, 650 200" stroke="rgba(255,255,255,0.6)" stroke-width="1.5" fill="none"/>
+                            <path d="M 150 200 Q 200 250, 300 270 Q 400 285, 500 275 Q 600 255, 650 200" stroke="rgba(255,255,255,0.6)" stroke-width="1.5" fill="none"/>
+                            <g stroke="rgba(255,255,255,0.15)" stroke-width="0.5">
+                                <line x1="200" y1="155" x2="200" y2="260"/>
+                                <line x1="280" y1="138" x2="280" y2="272"/>
+                                <line x1="360" y1="125" x2="360" y2="280"/>
+                                <line x1="440" y1="122" x2="440" y2="282"/>
+                                <line x1="520" y1="128" x2="520" y2="278"/>
+                                <line x1="600" y1="145" x2="600" y2="260"/>
+                            </g>
+                            <g font-size="9" fill="rgba(255,255,255,0.3)" font-family="JetBrains Mono" text-anchor="middle">
+                                <text x="200" y="295">ST 1</text><text x="280" y="295">ST 2</text><text x="360" y="295">ST 3</text>
+                                <text x="440" y="295">ST 4</text><text x="520" y="295">ST 5</text><text x="600" y="295">ST 6</text>
+                            </g>
+                            <circle cx="410" cy="220" r="5" fill="rgba(0,113,227,0.8)" stroke="rgba(0,113,227,0.4)" stroke-width="8"/>
+                            <text x="410" y="240" font-size="10" fill="rgba(0,113,227,0.8)" font-family="Inter" text-anchor="middle">LCB</text>
+                            <g stroke="rgba(255,255,255,0.2)" stroke-width="0.5"><line x1="150" y1="320" x2="650" y2="320"/><line x1="150" y1="315" x2="150" y2="325"/><line x1="650" y1="315" x2="650" y2="325"/></g>
+                            <text x="400" y="340" font-size="11" fill="rgba(255,255,255,0.4)" font-family="Inter" text-anchor="middle">LOA: 9.75m</text>
+                        </svg>
+                    </div>
+                    <div class="viewer-info">
+                        <div class="viewer-info-item"><div class="viewer-info-label">Vertices</div><div class="viewer-info-value">24,576</div></div>
+                        <div class="viewer-info-item"><div class="viewer-info-label">Faces</div><div class="viewer-info-value">49,152</div></div>
+                        <div class="viewer-info-item"><div class="viewer-info-label">LOD</div><div class="viewer-info-value">High</div></div>
+                    </div>
+                    <div class="viewer-controls"><div class="viewer-control">+</div><div class="viewer-control">−</div><div class="viewer-control">⟲</div></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="stats">
+        <div class="stats-content">
+            <div class="stats-header reveal"><h2>By The Numbers</h2></div>
+            <div class="stats-grid reveal-stagger">
+                <div class="stat-card"><div class="stat-value">58</div><div class="stat-label">Production Modules</div></div>
+                <div class="stat-card"><div class="stat-value">2,090</div><div class="stat-label">Passing Tests</div></div>
+                <div class="stat-card"><div class="stat-value">150k+</div><div class="stat-label">Lines of Code</div></div>
+                <div class="stat-card"><div class="stat-value">500+</div><div class="stat-label">State Parameters</div></div>
+                <div class="stat-card"><div class="stat-value">27</div><div class="stat-label">Dataclasses</div></div>
+                <div class="stat-card"><div class="stat-value">80+</div><div class="stat-label">API Endpoints</div></div>
+                <div class="stat-card"><div class="stat-value">12</div><div class="stat-label">Physics Engines</div></div>
+                <div class="stat-card"><div class="stat-value">4</div><div class="stat-label">Classification Societies</div></div>
+            </div>
+        </div>
+    </section>
+
+    <section class="output">
+        <div class="output-content">
+            <div class="output-header reveal"><h2>Complete Engineering Packet</h2><p>Every design includes everything you need.</p></div>
+            <div class="output-grid reveal-stagger">
+                <div class="output-item"><span class="check">✓</span><span>Linesplan</span></div>
+                <div class="output-item"><span class="check">✓</span><span>Body plan</span></div>
+                <div class="output-item"><span class="check">✓</span><span>Stability curves</span></div>
+                <div class="output-item"><span class="check">✓</span><span>Resistance data</span></div>
+                <div class="output-item"><span class="check">✓</span><span>Scantling table</span></div>
+                <div class="output-item"><span class="check">✓</span><span>Weight summary</span></div>
+                <div class="output-item"><span class="check">✓</span><span>Systems loads</span></div>
+                <div class="output-item"><span class="check">✓</span><span>Compliance matrix</span></div>
+                <div class="output-item"><span class="check">✓</span><span>CAD geometry</span></div>
+                <div class="output-item"><span class="check">✓</span><span>glTF / GLB export</span></div>
+                <div class="output-item"><span class="check">✓</span><span>STL / OBJ export</span></div>
+                <div class="output-item"><span class="check">✓</span><span>JSON state dump</span></div>
+            </div>
+        </div>
+    </section>
+
+    <section class="integration">
+        <div class="integration-content reveal">
+            <h2>Seamless Integration</h2>
+            <p>MAGNET outputs validated geometry for any downstream CAD system. It doesn't replace your tools — it makes them better.</p>
+            <div class="integration-flow">
+                <span class="integration-badge">MAGNET</span>
+                <span class="integration-arrow">→</span>
+                <div class="integration-tools">
+                    <span class="integration-tool">Rhino</span>
+                    <span class="integration-tool">CADMATIC</span>
+                    <span class="integration-tool">ShipConstructor</span>
+                    <span class="integration-tool">NAPA</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="security" id="security">
+        <div class="security-content">
+            <h2 class="reveal">Defense-Grade Security</h2>
+            <div class="security-grid reveal-stagger">
+                <div class="security-item"><span class="check">✓</span><span>Fully local / offline mode</span></div>
+                <div class="security-item"><span class="check">✓</span><span>Encrypted GPU clusters</span></div>
+                <div class="security-item"><span class="check">✓</span><span>WireGuard tunnels</span></div>
+                <div class="security-item"><span class="check">✓</span><span>Zero plaintext transmission</span></div>
+                <div class="security-item"><span class="check">✓</span><span>AES-256-XTS at rest</span></div>
+                <div class="security-item"><span class="check">✓</span><span>TLS 1.3 inference</span></div>
+                <div class="security-item"><span class="check">✓</span><span>Containerized isolation</span></div>
+                <div class="security-item"><span class="check">✓</span><span>Air-gapped deployment</span></div>
+            </div>
+        </div>
+    </section>
+
+    <section class="roadmap">
+        <div class="roadmap-content">
+            <div class="roadmap-header reveal"><h2>Where MAGNET Is Going</h2><p>From naval architecture to universal design intelligence.</p></div>
+            <div class="roadmap-timeline reveal-stagger">
+                <div class="roadmap-item"><div class="roadmap-version current">V1.1</div><div class="roadmap-card current"><div class="roadmap-title">Production Release <span class="roadmap-badge">Current</span></div><div class="roadmap-desc">Full design spiral automation. 58 modules, 12 physics engines, multi-format export, classification compliance.</div></div></div>
+                <div class="roadmap-item"><div class="roadmap-version">V2</div><div class="roadmap-card"><div class="roadmap-title">Concept-to-Preliminary Designer</div><div class="roadmap-desc">Variant generation & comparison, NSGA-II optimization, natural language mission briefs, sketch/image interpretation.</div></div></div>
+                <div class="roadmap-item"><div class="roadmap-version">V3</div><div class="roadmap-card"><div class="roadmap-title">Interior + Systems Intelligence</div><div class="roadmap-desc">Interior layout engine, corridor & egress generation, systems macro-routing, interactive 3D walkthrough.</div></div></div>
+                <div class="roadmap-item"><div class="roadmap-version">V4</div><div class="roadmap-card"><div class="roadmap-title">Production-Grade Routing</div><div class="roadmap-desc">3D pipe/cable/duct routing with clash detection, STEP/IGES export, FEA integration, full class automation.</div></div></div>
+                <div class="roadmap-item"><div class="roadmap-version">V5</div><div class="roadmap-card"><div class="roadmap-title">Beyond Marine</div><div class="roadmap-desc">AI-BIM for architecture. Aerospace structural mode. Ground vehicle design. Universal engineering design OS.</div></div></div>
+            </div>
+        </div>
+    </section>
+
+    <section class="founder">
+        <div class="founder-content reveal">
+            <p class="founder-quote">"Could one system unify the entire naval design spiral — mission, hull, physics, structure, systems, interior, routing, compliance — into a single reasoning engine? <em>The answer is yes.</em> And this repository is proof."</p>
+            <p class="founder-attribution">— Ben Gibson, Founder</p>
+        </div>
+    </section>
+
+    <section class="cta">
+        <div class="cta-glow"></div>
+        <div class="cta-content reveal">
+            <h2>MAGNET</h2>
+            <p class="cta-tagline">The Naval Engineering Operating System</p>
+            <p class="cta-stats">58 modules • 2,090 tests • 12 physics engines • 150k+ lines of code</p>
+            <p class="cta-closing">One unified platform. Zero disconnected tools. Infinite possibilities.</p>
+            <p class="cta-footer">Ben Gibson · December 2025</p>
+        </div>
+    </section>
+
+    <script>
+        const observerOptions = { threshold: 0.15, rootMargin: '0px 0px -60px 0px' };
+        const observer = new IntersectionObserver((entries) => { entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('visible'); }); }, observerOptions);
+        document.querySelectorAll('.reveal, .reveal-stagger').forEach(el => observer.observe(el));
+
+        const terminalObserver = new IntersectionObserver((entries) => { entries.forEach(entry => { if (entry.isIntersecting) { animateTerminal(); terminalObserver.unobserve(entry.target); } }); }, { threshold: 0.3 });
+        const terminal = document.getElementById('terminal');
+        if (terminal) terminalObserver.observe(terminal);
+
+        function animateTerminal() {
+            const lines = document.querySelectorAll('.terminal-line');
+            lines.forEach((line) => { const delay = parseInt(line.dataset.delay) || 0; setTimeout(() => line.classList.add('visible'), delay); });
+        }
+
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) { e.preventDefault(); const target = document.querySelector(this.getAttribute('href')); if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' }); });
+        });
+
+        const spiralSteps = document.querySelectorAll('.spiral-step');
+        let currentActive = 0;
+        function animateSpiral() { spiralSteps.forEach(step => step.classList.remove('active')); spiralSteps[currentActive].classList.add('active'); currentActive = (currentActive + 1) % spiralSteps.length; }
+        const spiralSection = document.querySelector('.spiral');
+        if (spiralSection) {
+            const spiralObserver = new IntersectionObserver((entries) => { entries.forEach(entry => { if (entry.isIntersecting) { setInterval(animateSpiral, 800); spiralObserver.unobserve(entry.target); } }); }, { threshold: 0.5 });
+            spiralObserver.observe(spiralSection);
+        }
+
+        const viewerTools = document.querySelectorAll('.viewer-tool');
+        viewerTools.forEach(tool => { tool.addEventListener('click', function() { viewerTools.forEach(t => t.classList.remove('active')); this.classList.add('active'); }); });
+
+        const nav = document.querySelector('nav');
+        window.addEventListener('scroll', () => { nav.style.background = window.scrollY > 100 ? 'rgba(0,0,0,0.95)' : 'rgba(0,0,0,0.8)'; });
+    </script>
+</body>
+</html>
